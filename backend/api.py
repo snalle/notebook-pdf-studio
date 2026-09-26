@@ -5,7 +5,7 @@ from typing import Literal
 
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -17,6 +17,7 @@ from backend.models import (
 )
 from backend.notebook.loader import load_notebook
 from backend.render import render_html
+from backend.pdf import export_pdf
 
 
 class CodeBlockOverride(BaseModel):
@@ -185,3 +186,64 @@ def render_notebook(request: RenderRequest) -> HTMLResponse:
     html = rendered_path.read_text(encoding="utf-8")
 
     return HTMLResponse(content=html)
+
+
+@app.post("/api/export", response_class=FileResponse)
+def export_notebook(request: RenderRequest) -> FileResponse:
+    """Render a notebook and export it as a PDF.
+
+    Args:
+        request: Notebook path and optional block-specific layout settings.
+
+    Returns:
+        Generated PDF file.
+
+    Raises:
+        HTTPException: If the requested notebook does not exist.
+    """
+    notebook_path = Path(request.notebook)
+
+    if not notebook_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Notebook not found: {request.notebook}",
+        )
+
+    blocks = load_notebook(str(notebook_path))
+
+    for block in blocks:
+        if not isinstance(block, CodeBlock):
+            continue
+
+        override = request.overrides.get(block.id)
+
+        if override is None:
+            continue
+
+        if override.font_size is not None:
+            block.font_size = override.font_size
+
+        if override.pagination is not None:
+            block.pagination = override.pagination
+
+        if override.manual_breaks is not None:
+            block.manual_breaks = override.manual_breaks
+
+    html_path = Path("build/api_export.html")
+    pdf_path = Path("build/api_export.pdf")
+
+    rendered_html = render_html(
+        blocks=blocks,
+        output_path=html_path,
+    )
+
+    rendered_pdf = export_pdf(
+        html_path=rendered_html,
+        output_path=pdf_path,
+    )
+
+    return FileResponse(
+        path=rendered_pdf,
+        media_type="application/pdf",
+        filename=f"{notebook_path.stem}.pdf",
+    )

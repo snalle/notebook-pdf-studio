@@ -107,6 +107,38 @@ function App() {
     setPreviewHtml(html);
   }
 
+  async function exportPdf() {
+    const response = await fetch(`${API_URL}/api/export`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        notebook,
+        overrides,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Could not export PDF.");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+
+    const filename =
+      notebook.split("/").pop()?.replace(".ipynb", ".pdf") ??
+      "notebook.pdf";
+
+    link.download = filename;
+    link.click();
+
+    URL.revokeObjectURL(url);
+  }
+
   const fontSize =
     selectedOverride?.font_size ??
     selectedBlock?.font_size ??
@@ -232,6 +264,13 @@ function App() {
         >
           Update preview
         </button>
+
+        <button
+        onClick={exportPdf}
+        disabled={blocks.length === 0}
+>
+         Export PDF
+        </button>
       </aside>
 
       <main className="preview-area">
@@ -250,5 +289,7 @@ function App() {
     </div>
   );
 }
+
+
 
 export default App;
