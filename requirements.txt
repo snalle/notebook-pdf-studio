@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+nbformat
+jinja2
+pygments
+markdown-it-py
+playwright
