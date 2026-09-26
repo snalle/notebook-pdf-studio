@@ -1,0 +1,38 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Notebook PDF Studio PoC</title>
+
+    <style>
+        {{ document_css | safe }}
+
+        {{ pygments_css | safe }}
+    </style>
+</head>
+
+<body>
+    <main class="document">
+
+        {% for block in blocks %}
+
+            <section
+                class="
+                    block
+                    block-{{ block.kind }}
+                    pagination-{{ block.pagination | default('auto') }}
+                "
+                {% if block.font_size is defined %}
+                    style="--code-font-size: {{ block.font_size }}pt;"
+                {% endif %}
+            >
+                {{ block.content | safe }}
+            </section>
+
+        {% endfor %}
+
+    </main>
+</body>
+</html>

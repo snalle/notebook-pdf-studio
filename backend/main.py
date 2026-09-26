@@ -1,12 +1,19 @@
 """Run the Notebook PDF Studio proof of concept."""
 
 from pathlib import Path
+
 from backend.notebook.loader import load_notebook
+from backend.render import render_html
+
 
 notebook_path = Path("examples/poc.ipynb")
-blocks = load_notebook(str(notebook_path))
+output_path = Path("build/poc.html")
 
-for block in blocks:
-    print(type(block).__name__)
-    print(block)
-    print("-" * 50)
+blocks = load_notebook(notebook_path)
+
+rendered_path = render_html(
+    blocks=blocks,
+    output_path=output_path,
+)
+
+print(f"Rendered HTML: {rendered_path.resolve()}")

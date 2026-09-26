@@ -1,6 +1,9 @@
 # Virtual environment
 .venv/
 
+# Generated files
+build/
+
 # Python
 __pycache__/
 *.py[cod]
