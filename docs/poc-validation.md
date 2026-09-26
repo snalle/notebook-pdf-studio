@@ -94,14 +94,6 @@ Confirmed that a user can:
 - Update the HTML preview
 - Export a PDF using the selected settings
 
-### PoC conclusion
-
-The main technical risk has been validated: Notebook PDF Studio can treat notebook code cells as layout-aware document objects and give users explicit control over how those code blocks behave across PDF page boundaries.
-
-The PoC is therefore considered complete.
-
-The main usability limitation remaining is that the browser preview does not yet display true visual page boundaries. Building a paginated, WYSIWYG-style preview is deferred to the MVP.
-
 ## Conclusion
 
 The proof of concept successfully validated the core rendering and pagination approach.
