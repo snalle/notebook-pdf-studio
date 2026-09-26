@@ -102,6 +102,15 @@ body {
     break-inside: auto;
 }
 
+.manual-page-break {
+    break-before: page;
+    page-break-before: always;
+}
+
+.pagination-manual {
+    break-inside: auto;
+}
+
 
 /* Printing */
 
@@ -119,4 +128,6 @@ body {
         margin: 0;
         padding: 0;
     }
+
+    
 }

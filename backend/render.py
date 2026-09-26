@@ -56,14 +56,36 @@ def render_html(
             )
 
         elif isinstance(block, CodeBlock):
+            if block.pagination == "manual" and block.manual_breaks:
+                source_segments = split_source_at_lines(
+                    block.source,
+                    block.manual_breaks,
+                )
+
+                rendered_segments = [
+                    highlight(
+                        segment,
+                        PythonLexer(),
+                        code_formatter,
+                    )
+                    for segment in source_segments
+                ]
+
+                content = (
+                    '<div class="manual-page-break"></div>'
+                ).join(rendered_segments)
+
+            else:
+                content = highlight(
+                    block.source,
+                    PythonLexer(),
+                    code_formatter,
+                )
+
             rendered_blocks.append(
                 {
                     "kind": "code",
-                    "content": highlight(
-                        block.source,
-                        PythonLexer(),
-                        code_formatter,
-                    ),
+                    "content": content,
                     "font_size": block.font_size,
                     "pagination": block.pagination,
                 }
@@ -103,3 +125,39 @@ def render_html(
     output_path.write_text(html, encoding="utf-8")
 
     return output_path
+
+
+
+def split_source_at_lines(
+    source: str,
+    break_lines: list[int],
+) -> list[str]:
+    """Split source code after specified one-based line numbers.
+
+    Args:
+        source: Source code to split.
+        break_lines: One-based line numbers after which to split.
+
+    Returns:
+        Source-code segments in their original order.
+    """
+    lines = source.splitlines()
+
+    valid_breaks = sorted(
+        {
+            line_number
+            for line_number in break_lines
+            if 0 < line_number < len(lines)
+        }
+    )
+
+    segments: list[str] = []
+    start = 0
+
+    for break_line in valid_breaks:
+        segments.append("\n".join(lines[start:break_line]))
+        start = break_line
+
+    segments.append("\n".join(lines[start:]))
+
+    return segments
